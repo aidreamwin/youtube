@@ -20,6 +20,7 @@ type Video struct {
 	PublishDate     time.Time
 	Formats         FormatList
 	Thumbnails      Thumbnails
+	Subtitles       Subtitles
 	DASHManifestURL string // URI of the DASH manifest file
 	HLSManifestURL  string // URI of the HLS manifest file
 }
@@ -116,6 +117,12 @@ func (v *Video) extractDataFromPlayerResponse(prData playerResponseData) error {
 	v.HLSManifestURL = prData.StreamingData.HlsManifestURL
 	v.DASHManifestURL = prData.StreamingData.DashManifestURL
 
+	// subtitles
+	err := v.parseSubtitles(prData)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -125,4 +132,36 @@ func (v *Video) SortBitrateDesc(i int, j int) bool {
 
 func (v *Video) SortBitrateAsc(i int, j int) bool {
 	return v.Formats[i].Bitrate < v.Formats[j].Bitrate
+}
+
+func (v *Video) parseSubtitles(prData playerResponseData) error {
+	v.Subtitles = make(Subtitles)
+	if len(prData.Captions.PlayerCaptionsTracklistRenderer.CaptionTracks) <= 0 {
+		return nil
+	}
+	var baseUrl string = prData.Captions.PlayerCaptionsTracklistRenderer.CaptionTracks[0].BaseUrl
+
+	for _, captionTrack := range prData.Captions.PlayerCaptionsTracklistRenderer.CaptionTracks {
+		for _, ext := range []string{"srv1", "srv2", "srv3", "ttml", "vtt"} {
+			v.Subtitles[captionTrack.LanguageCode] = append(v.Subtitles[captionTrack.LanguageCode], SubtitlesNode{
+				Ext: ext,
+				Url: baseUrl + "&fmt=" + ext,
+			})
+		}
+	}
+	if baseUrl == "" {
+		return nil
+	}
+	for _, language := range prData.Captions.PlayerCaptionsTracklistRenderer.TranslationLanguages {
+		if len(v.Subtitles[language.LanguageCode]) > 0 {
+			continue
+		}
+		for _, ext := range []string{"srv1", "srv2", "srv3", "ttml", "vtt"} {
+			v.Subtitles[language.LanguageCode] = append(v.Subtitles[language.LanguageCode], SubtitlesNode{
+				Ext: ext,
+				Url: baseUrl + "&fmt=" + ext + "&tlang=" + language.LanguageCode,
+			})
+		}
+	}
+	return nil
 }

@@ -68,6 +68,33 @@ type playerResponseData struct {
 			UploadDate         string   `json:"uploadDate"`
 		} `json:"playerMicroformatRenderer"`
 	} `json:"microformat"`
+	Captions struct {
+		PlayerCaptionsTracklistRenderer struct {
+			CaptionTracks []struct {
+				BaseUrl string `json:"baseUrl"`
+				Name    struct {
+					SimpleText string `json:"simpleText"`
+				} `json:"name"`
+				VssId          string `json:"vssId"`
+				LanguageCode   string `json:"languageCode"`
+				IsTranslatable bool   `json:"isTranslatable"`
+			} `json:"captionTracks"`
+			AudioTracks []struct {
+				CaptionTrackIndices      []int  `json:"captionTrackIndices"`
+				DefaultCaptionTrackIndex int    `json:"defaultCaptionTrackIndex"`
+				Visibility               string `json:"visibility"`
+				HasDefaultTrack          bool   `json:"hasDefaultTrack"`
+				CaptionsInitialState     string `json:"captionsInitialState"`
+			} `json:"audioTracks"`
+			TranslationLanguages []struct {
+				LanguageCode string `json:"languageCode"`
+				LanguageName struct {
+					SimpleText string `json:"simpleText"`
+				} `json:"languageName"`
+			} `json:"translationLanguages"`
+			DefaultAudioTrackIndex int `json:"defaultAudioTrackIndex"`
+		} `json:"playerCaptionsTracklistRenderer"`
+	} `json:"captions"`
 }
 
 type Format struct {

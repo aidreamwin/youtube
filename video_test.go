@@ -133,3 +133,14 @@ func TestDownload_SensitiveContent(t *testing.T) {
 	_, err := testClient.GetVideo("MS91knuzoOA")
 	require.EqualError(t, err, "can't bypass age restriction: embedding of this video has been disabled")
 }
+
+func TestDownload_GetSubtitles(t *testing.T) {
+	// https://www.youtube.com/watch?v=BaW_jenozKc
+	video, err := testClient.GetVideo("https://www.youtube.com/watch?v=fsal98GPBNM")
+	if err != nil {
+		panic(err)
+	}
+	url := video.Subtitles.GetSubtitleLink("zh-Hans")
+	t.Log(video.Subtitles)
+	t.Log(url)
+}
